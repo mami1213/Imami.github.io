@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>かぎ針編み 円形編み図ジェネレーター</title>
+    
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f8f4f0;
+            color: #5d4037;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #8d6e63;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #a1887f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #8d6e63;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        /* ▼▼▼ カウンター用のスタイルを追加 ▼▼▼ */
+        .visitor-counter {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777;
+        }
+        #counter {
+            font-weight: bold;
+            font-size: 16px;
+            color: #5d4037;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>かぎ針編み 円形編み図ジェネレーター</h1>
+        <div class="input-group">
+            <label for="gauge">ゲージ（10cmあたりの細編みの目数）:</label>
+            <input type="number" id="gauge" value="20">
+        </div>
+        <div class="input-group">
+            <label for="diameter">作りたい円の直径（cm）:</label>
+            <input type="number" id="diameter" value="15">
+        </div>
+        <button id="generateBtn">編み図を作成</button>
+        
+        <h2>生成された編み図</h2>
+        <pre id="result"></pre>
+
+        <p class="visitor-counter">あなたは <span id="counter">...</span> 人目のお客様です  방문객</p>
+    </div>
+
+    <script>
+        // 編み図生成のロジック（変更なし）
+        function generateCirclePattern(gaugeStitches, targetDiameter) {
+            if (gaugeStitches <= 0 || targetDiameter <= 0) {
+                return "ゲージと直径は0より大きい数値を入力してください。";
+            }
+            const stitchesPerCm = gaugeStitches / 10.0;
+            const targetCircumference = targetDiameter * Math.PI;
+            const totalStitchesNeeded = targetCircumference * stitchesPerCm;
+            const finalRound = Math.ceil(totalStitchesNeeded / 6.0);
+            let pattern = `【目標サイズ: 直径${targetDiameter}cm / ${finalRound}段】\n`;
+            pattern += "----------------------------------------\n";
+            for (let n = 1; n <= finalRound; n++) {
+                const totalStitches = 6 * n;
+                if (n === 1) {
+                    pattern += `1段目: 輪の中に細編みを6目編み入れる (${totalStitches}目)\n`;
+                } else if (n === 2) {
+                    pattern += `2段目: 毎目増し目をする (${totalStitches}目)\n`;
+                } else {
+                    const scRepeat = n - 2;
+                    pattern += `${n}段目: (細編みを${scRepeat}目, 増し目を1目) を6回繰り返す (${totalStitches}目)\n`;
+                }
+            }
+            return pattern;
+        }
+
+        // ボタンの処理（変更なし）
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            const gauge = parseFloat(document.getElementById('gauge').value);
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const resultPattern = generateCirclePattern(gauge, diameter);
+            document.getElementById('result').textContent = resultPattern;
+        });
+
+        // ▼▼▼ ここからカウンター用の処理を追記 ▼▼▼
+
+        // カウンターを更新するための非同期関数
+        async function updateCounter() {
+
+            const counterId = "Imami1213";
+            const apiUrl = `https://api.countapi.xyz/hit/mami1213/${counterId}`;
+
+            try {
+                // countapi.xyzにアクセスしてカウントを1つ増やし、結果を取得
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                // 取得した訪問者数を画面に表示
+                document.getElementById('counter').textContent = data.value;
+            } catch (error) {
+                // もしエラーが起きても、カウンター表示が「...」のままになるだけ
+                console.error("カウンターの取得に失敗しました:", error);
+            }
+        }
+
+        // ページが読み込まれたらカウンターの関数を実行する
+        updateCounter();
+    </script>
+
+</body>
+</html>
